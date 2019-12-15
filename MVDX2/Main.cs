@@ -24,7 +24,7 @@ namespace MVDX2
 
         public static string ExeDirectory = null;
 
-        public const string VERSION = "Version 1.5.5";
+        public const string VERSION = "v1.0";
 
         public static bool FIXED_TIME_STEP = false;
 
@@ -383,7 +383,7 @@ namespace MVDX2
 
         public Main()
         {
-            Window.Title = "MVDX2";
+            Window.Title = $"MVDX2 {VERSION}";
 
             ExeDirectory = new FileInfo(typeof(Main).Assembly.Location).DirectoryName;
 

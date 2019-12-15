@@ -32,9 +32,11 @@ namespace MVDX2
         {
             var distDetermine = Math.Max(ModelHeight_ForOrbitCam, ModelDepth_ForOrbitCam);
             if (ViewportAspectRatio < 1)
-                OrbitCamDistance = (float)Math.Sqrt((distDetermine * 2) / (ViewportAspectRatio * 0.66f));
+                OrbitCamDistance = (distDetermine * 2) / (ViewportAspectRatio * 0.66f);
             else
-                OrbitCamDistance = (float)Math.Sqrt(distDetermine * 2);
+                OrbitCamDistance = distDetermine * 2;
+
+            OrbitCamDistance = (float)Math.Pow(OrbitCamDistance, 1 / GetOrbitCamDistPower(OrbitCamDistance));
 
             OrbitCamCenter = new Vector3(0, ModelCenter_ForOrbitCam.Y, 0);
 
@@ -270,7 +272,7 @@ namespace MVDX2
 
             MatrixProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(FieldOfView),
                    ViewportAspectRatio,
-                   NearClipDistance, FarClipDistance);
+                   NearClipDistance, FarClipDistance + GetVisualOrbitCamDistance());
 
         }
 
@@ -333,7 +335,7 @@ namespace MVDX2
                 Matrix.CreateRotationX(-CameraTransform.EulerRotation.X)
                 * Matrix.CreateRotationY(-CameraTransform.EulerRotation.Y)
                 * Matrix.CreateRotationZ(-CameraTransform.EulerRotation.Z)
-                ) * speed) * (OrbitCamDistance * OrbitCamDistance) * 0.5f;
+                ) * speed) * (GetVisualOrbitCamDistance()) * 0.5f;
         }
 
         public void PointCameraToLocation(Vector3 location)
@@ -472,7 +474,7 @@ namespace MVDX2
                     OrbitCamDistance = Math.Max(OrbitCamDistance, SHITTY_CAM_ZOOM_MIN_DIST);
 
                     var distanceVectorAfterMove = -Vector3.Transform(Vector3.Forward, CameraTransform.RotationMatrixXYZ * Matrix.CreateRotationY(MathHelper.Pi)) * new Vector3(-1, 1, 1);
-                    CameraTransform.Position = (OrbitCamCenter + (distanceVectorAfterMove * (OrbitCamDistance * OrbitCamDistance)));
+                    CameraTransform.Position = (OrbitCamCenter + (distanceVectorAfterMove * (GetVisualOrbitCamDistance())));
 
                     
                 }
@@ -799,7 +801,7 @@ namespace MVDX2
                 OrbitCamDistance = Math.Max(OrbitCamDistance, SHITTY_CAM_ZOOM_MIN_DIST);
 
                 var distanceVectorAfterMove = -Vector3.Transform(Vector3.Forward, CameraTransform.RotationMatrixXYZ * Matrix.CreateRotationY(MathHelper.Pi)) * new Vector3(-1, 1, 1);
-                CameraTransform.Position = (OrbitCamCenter + (distanceVectorAfterMove * (OrbitCamDistance * OrbitCamDistance)));
+                CameraTransform.Position = (OrbitCamCenter + (distanceVectorAfterMove * (GetVisualOrbitCamDistance())));
             }
             else
             {
@@ -823,6 +825,27 @@ namespace MVDX2
             oldOrbitCamToggleKeyPressed = isOrbitCamToggleKeyPressed;
 
             oldMouse = mousePos;
+        }
+
+        public float GetOrbitCamDistPower(float dist)
+        {
+            if (OrbitCamDistance <= 1)
+                return 1;
+            else
+                return 1.0f + OrbitCamDistance / 5;
+        }
+
+        public float GetVisualOrbitCamDistance()
+        {
+            if (OrbitCamDistance <= 1)
+                return OrbitCamDistance;
+            else
+                return (float)Math.Pow(OrbitCamDistance, GetOrbitCamDistPower(OrbitCamDistance));
+            //else if (OrbitCamDistance < 5)
+
+            //    return OrbitCamDistance * OrbitCamDistance; // Max of 25
+            //else
+            //    return (OrbitCamDistance * OrbitCamDistance * OrbitCamDistance) - 100; 
         }
     }
 }
